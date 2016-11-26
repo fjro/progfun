@@ -31,6 +31,10 @@ class BlurSuite extends FunSuite {
     assert(boxBlurKernel(src, 1, 2, 1) === 12,
       s"(boxBlurKernel(1, 2, 1) should be 12, " +
         s"but it's ${boxBlurKernel(src, 1, 2, 1)})")
+
+    assert(boxBlurKernel(src, 0, 2, 1) === 13,
+      s"(boxBlurKernel(0, 2, 1) should be 13, " +
+        s"but it's ${boxBlurKernel(src, 0, 2, 1)})")
   }
 
   test("HorizontalBoxBlur.blur with radius 1 should correctly blur the entire 3x3 image") {
