@@ -44,25 +44,16 @@ object VerticalBoxBlur {
    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
     println("blur: f = " + from + "; end = " + end)
-    if (radius <= 0) {
-
-    }
-    else {
+    if (radius > 0) {
       val y = 0 until src.height
       val x = from until end
-//      println("x = " + x)
-//      println("y = " + y)
       val p = for {
         xi <- x
         yi <- y
       } yield (xi, yi)
-//      println("length = " + p.length)
-//      println("p = " + p)
 
       p map(t => dst update(t._1, t._2, boxBlurKernel(src, t._1, t._2, radius)))
-//      println("dst = " +dst(0,1))
     }
-
   }
 
   /** Blurs the columns of the source image in parallel using `numTasks` tasks.
