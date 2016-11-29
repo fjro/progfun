@@ -54,6 +54,11 @@ object HorizontalBoxBlur {
     }
   }
 
+  def bound(value: Int, max: Int): Int = {
+    if(value <= max) value
+    else max
+  }
+
   /** Blurs the rows of the source image in parallel using `numTasks` tasks.
    *
    *  Parallelization is done by stripping the source image `src` into
@@ -61,9 +66,15 @@ object HorizontalBoxBlur {
    *  rows.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-  // TODO implement using the `task` construct and the `blur` method
+    val strips = 0 to src.height by numTasks map(i => (i, bound(i + numTasks, src.height)))
 
-  ???
+    val tasks = for {
+      strip <- strips
+    } yield task(blur(src, dst, strip._1, strip._2, radius))
+
+    for {
+      t <- tasks
+    } yield t.join()
   }
 
 }
