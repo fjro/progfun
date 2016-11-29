@@ -41,7 +41,14 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def balance(chars: Array[Char]): Boolean = {
-    ???
+    def pb(chars: Array[Char], opens: Int): Boolean = {
+      if (chars.isEmpty) opens == 0
+      else if(opens < 0) false
+      else if (chars.head == '(') pb(chars.tail, opens + 1)
+      else if (chars.head == ')') pb(chars.tail, opens - 1)
+      else pb(chars.tail, opens)
+    }
+    pb(chars, 0)
   }
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
