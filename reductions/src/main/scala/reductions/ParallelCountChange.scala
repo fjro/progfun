@@ -46,13 +46,9 @@ object ParallelCountChange {
    *  coins for the specified amount of money.
    */
   def countChange(money: Int, coins: List[Int]): Int = {
-    def loop(acc: Int, coins: List[Int]): Int = {
-      if (money <= 0 || acc > money || coins.isEmpty) 0
-      else if (acc == money) 1
-      else loop(acc + coins.head, coins) + loop(acc , coins.tail)
-    }
-
-    loop(0, coins)
+    if (money == 0) 1
+    else if (money < 0 || coins.isEmpty) 0
+    else countChange(money - coins.head, coins) + countChange(money, coins.tail)
   }
 
   type Threshold = (Int, List[Int]) => Boolean
@@ -61,20 +57,31 @@ object ParallelCountChange {
    *  specified list of coins for the specified amount of money.
    */
   def parCountChange(money: Int, coins: List[Int], threshold: Threshold): Int = {
-    ???
+    if (!threshold(money, coins)) countChange(money, coins)
+    else {
+      val res = parallel(parCountChange(money - coins.head, coins, threshold),
+        parCountChange(money, coins.tail, threshold))
+      res._1 + res._2
+    }
   }
 
   /** Threshold heuristic based on the starting money. */
-  def moneyThreshold(startingMoney: Int): Threshold =
-    ???
-
-  /** Threshold heuristic based on the total number of initial coins. */
-  def totalCoinsThreshold(totalCoins: Int): Threshold =
-    ???
+  def moneyThreshold(startingMoney: Int): Threshold = (amount: Int, coins: List[Int]) => amount <= (startingMoney * 2)/3.0
 
 
-  /** Threshold heuristic based on the starting money and the initial list of coins. */
+
+  /** Threshold heuristic based on the total number of initial coins.
+    * returns a threshold function that returns true when the number of coins is less than or equal to the 2 / 3 of the initial number of coins
+    * */
+  def totalCoinsThreshold(totalCoins: Int): Threshold = (amount: Int, coins: List[Int]) => coins.length <= (totalCoins * 2)/3.0
+
+
+  /** Threshold heuristic based on the starting money and the initial list of coins.
+    * returns a threshold function that returns true when the amount of money multiplied
+    * with the number of remaining coins is less than or equal to the starting money
+    * multiplied with the initial number of coins divided by 2
+    * */
   def combinedThreshold(startingMoney: Int, allCoins: List[Int]): Threshold = {
-    ???
+    (amount: Int, coins: List[Int]) => amount * coins.length <= startingMoney * (allCoins.length/2.0)
   }
 }
