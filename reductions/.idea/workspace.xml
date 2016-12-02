@@ -63,8 +63,8 @@
       <file leaf-file-name="LineOfSight.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/reductions/LineOfSight.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="350">
-              <caret line="80" column="21" selection-start-line="80" selection-start-column="21" selection-end-line="80" selection-end-column="21" />
+            <state relative-caret-position="931">
+              <caret line="95" column="58" selection-start-line="95" selection-start-column="58" selection-end-line="95" selection-end-column="58" />
               <folding />
             </state>
           </provider>
@@ -73,8 +73,8 @@
       <file leaf-file-name="LineOfSightSuite.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/scala/reductions/LineOfSightSuite.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="11" column="6" selection-start-line="11" selection-start-column="6" selection-end-line="11" selection-end-column="6" />
+            <state relative-caret-position="697">
+              <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -101,6 +101,7 @@
         <option value="$PROJECT_DIR$/src/main/scala/reductions/ParallelCountChange.scala" />
         <option value="$PROJECT_DIR$/src/test/scala/reductions/ParallelCountChangeSuite.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/reductions/ParallelParenthesesBalancing.scala" />
+        <option value="$PROJECT_DIR$/src/test/scala/reductions/LineOfSightSuite.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/reductions/LineOfSight.scala" />
       </list>
     </option>
@@ -764,16 +765,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/scala/reductions/LineOfSightSuite.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="11" column="6" selection-start-line="11" selection-start-column="6" selection-end-line="11" selection-end-column="6" />
+        <state relative-caret-position="697">
+          <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/reductions/LineOfSight.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="80" column="21" selection-start-line="80" selection-start-column="21" selection-end-line="80" selection-end-column="21" />
+        <state relative-caret-position="931">
+          <caret line="95" column="58" selection-start-line="95" selection-start-column="58" selection-end-line="95" selection-end-column="58" />
           <folding />
         </state>
       </provider>

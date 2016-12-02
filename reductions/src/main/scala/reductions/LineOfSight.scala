@@ -95,7 +95,7 @@ object LineOfSight {
   def downsweepSequential(input: Array[Float], output: Array[Float],
     startingAngle: Float, from: Int, until: Int): Unit = {
     var i = from
-    output(0) = startingAngle
+    output(0) = 0
     var rm = startingAngle
     while (i < until) {
       val angle = input(i) / i
@@ -113,7 +113,6 @@ object LineOfSight {
     tree: Tree): Unit = tree match {
     case Leaf(from, until, startingAngle) =>
       downsweepSequential(input, output, startingAngle, from, until)
-      //scanLeftSeg(inp, from, to, a0, f, out)
     case Node(l, r) => {
       val (_,_) = parallel(
         downsweep(input, output, startingAngle, l),
