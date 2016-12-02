@@ -21,6 +21,7 @@ object ParallelParenthesesBalancingRunner {
     val length = 100000000
     val chars = new Array[Char](length)
     val threshold = 10000
+    //val seqtime = 100
     val seqtime = standardConfig measure {
       seqResult = ParallelParenthesesBalancing.balance(chars)
     }
@@ -41,28 +42,48 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def balance(chars: Array[Char]): Boolean = {
-    def pb(chars: Array[Char], opens: Int): Boolean = {
-      if (chars.isEmpty) opens == 0
-      else if(opens < 0) false
-      else if (chars.head == '(') pb(chars.tail, opens + 1)
-      else if (chars.head == ')') pb(chars.tail, opens - 1)
-      else pb(chars.tail, opens)
+    var c = 0
+    var i = 0
+    while(i < chars.length) {
+      if (c < 0) i == chars.length
+      else if (chars(i) == '(') c = c + 1
+      else if (chars(i) == ')') c = c - 1
+      i = i + 1
     }
-    pb(chars, 0)
+    c == 0
   }
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
+    //println("parBalance: len = " + chars.length + ", threshold = " + threshold)
+    def traverse(idx: Int, until: Int, open: Int, close: Int) : (Int, Int) = {
+//      println("traverse: idx = " + idx + ", until = " + until + ", open = " + open + ", close = " + close)
+      if(until - idx < threshold) {
+        var i = idx
+        var o = open
+        var c = close
+        while(i < until) {
+          if (chars(i) == '(') o = o + 1
+          else if (chars(i) == ')') c = c + 1
+          i = i + 1
+        }
+        (o, c)
+      }
+      else {
+        val mid = idx + (until - idx)/2
+        parallel(reduce(idx, mid),
+                reduce(mid, until))
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) /*: ???*/ = {
-      ???
+      }
     }
 
-    def reduce(from: Int, until: Int) /*: ???*/ = {
-      ???
+    def reduce(from: Int, until: Int) : Int = {
+      val oc = traverse(from, until, 0, 0)
+      oc._1 - oc._2
     }
 
-    reduce(0, chars.length) == ???
+    reduce(0, chars.length) == 0
+
   }
 }
