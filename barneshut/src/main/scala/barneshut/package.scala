@@ -103,7 +103,7 @@ package object barneshut {
       * @return
       */
     def insert(b: Body): Quad = {
-      println("Leaf.insert: this " + this + "; b = " + b + ", size = " + size + ", minimumSize = " + minimumSize)
+      //println("Leaf.insert: this " + this + "; b = " + b + ", size = " + size + ", minimumSize = " + minimumSize)
       if (size > minimumSize) {
         val newSize = size/2
         val offset = size/4
@@ -156,7 +156,9 @@ package object barneshut {
   def force(m1: Float, m2: Float, dist: Float): Float = gee * m1 * m2 / (dist * dist)
 
   def distance(x0: Float, y0: Float, x1: Float, y1: Float): Float = {
-    math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)).toFloat
+    val dist = math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)).toFloat
+    println("dist = " + dist)
+    dist
   }
 
   class Body(val mass: Float, val x: Float, val y: Float, val xspeed: Float, val yspeed: Float) {
@@ -221,7 +223,8 @@ package object barneshut {
         }
         case Fork(nw, ne, sw, se) =>
           val dist = distance(quad.centerX, quad.centerY, x, y)
-          if(quad.size / dist > theta) addForce(quad.mass, quad.massX, quad.massY)
+          println("quad.size / dist < theta = " + (quad.size / dist < theta))
+          if(quad.size / dist < theta) addForce(quad.mass, quad.massX, quad.massY)
           else {
             traverse(nw)
             traverse(ne)

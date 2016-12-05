@@ -122,9 +122,6 @@ import FloatOps._
 
   }
 
-
-    //test[Observed Error] nw of the Fork, Empty(20.0,30.0,10.0), should be a Leaf
-
   // test cases for Body
 
   test("Body.updated should do nothing for Empty quad trees") {
@@ -143,10 +140,11 @@ import FloatOps._
 
     val quad = Leaf(15f, 30f, 20f, Seq(b2, b3))
     assert(quad.mass ~= 769.5f)
-
     println("test: " + b1.xspeed)
     println("test: " + b1.yspeed)
+
     val body = b1.updated(quad)
+
     println("test: " + body.xspeed)
     println("test: " + body.yspeed)
     assert(body.xspeed ~= 12.587037f)
