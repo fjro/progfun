@@ -59,6 +59,19 @@ import FloatOps._
     assert(quad.total == 1, s"${quad.total} should be 1")
   }
 
+  test("Fork with 4 empty quadrants") {
+
+    val nw = Empty(17.5f, 27.5f, 5.0f)
+    val ne = Empty(22.5f, 27.5f, 5.0f)
+    val sw = Empty(17.5f, 32.5f, 5.0f)
+    val se = Empty(22.5f, 32.5f,5.0f)
+    val quad = Fork(nw, ne, sw, se)
+
+    assert(quad.centerX == 20f, s"${quad.centerX} should be 20f")
+    assert(quad.centerY == 30f, s"${quad.centerY} should be 30f")
+
+  }
+
   test("Empty.insert(b) should return a Leaf with only that body") {
     val quad = Empty(51f, 46.3f, 5f)
     val b = new Body(3f, 54f, 46f, 0f, 0f)
@@ -74,6 +87,44 @@ import FloatOps._
     }
   }
 
+
+  test("bounds") {
+    val quad = Empty(10, 10, 5)
+    val inside = new Body(100f, 10f, 10f, 0f, 0f)
+    assert(bounds(quad, inside))
+
+    val outside = new Body(100f, 100f, 100f, 0f, 0f)
+    assert(!bounds(quad, outside))
+
+    val q2 = Empty(25f, 25f, 5f)
+    val i2 = new Body(542.5f, 24.5f, 25.5f, 0f, 0f)
+    assert(bounds(q2, i2))
+  }
+
+
+  test("Leaf.insert(b) should return a new Fork if size > minimumSize") {
+
+    val leaf = Leaf(20f, 30f, 10f, Seq( new Body(123f, 18f, 26f, 0f, 0f)))
+
+    val b = new Body(542.5f, 24.5f, 25.5f, 0f, 0f)
+    val inserted = leaf.insert(b)
+    println("inserted = " + inserted)
+    inserted match {
+      case Fork(nw, ne, sw, se) =>
+        assert(nw.isInstanceOf[Leaf], "nw should be a Leaf")
+        assert(ne.isInstanceOf[Leaf], "ne should be a Leaf")
+        assert(sw.isInstanceOf[Empty], "sw should be Empty")
+        assert(se.isInstanceOf[Empty], "se should be Empty")
+      case _ =>
+        fail("Leaf.insert() should have returned a Fork, was $inserted")
+    }
+
+
+  }
+
+
+    //test[Observed Error] nw of the Fork, Empty(20.0,30.0,10.0), should be a Leaf
+
   // test cases for Body
 
   test("Body.updated should do nothing for Empty quad trees") {
@@ -85,14 +136,19 @@ import FloatOps._
   }
 
   test("Body.updated should take bodies in a Leaf into account") {
+    //updated: body = Body(123.0, 18.0, 26.0): quad = Leaf(769.5, 15.0, 30.0, 20.0, List(Body(524.5, 24.5, 25.5), Body(245.0, 22.4, 41.0)))
     val b1 = new Body(123f, 18f, 26f, 0f, 0f)
     val b2 = new Body(524.5f, 24.5f, 25.5f, 0f, 0f)
     val b3 = new Body(245f, 22.4f, 41f, 0f, 0f)
 
     val quad = Leaf(15f, 30f, 20f, Seq(b2, b3))
+    assert(quad.mass ~= 769.5f)
 
+    println("test: " + b1.xspeed)
+    println("test: " + b1.yspeed)
     val body = b1.updated(quad)
-
+    println("test: " + body.xspeed)
+    println("test: " + body.yspeed)
     assert(body.xspeed ~= 12.587037f)
     assert(body.yspeed ~= 0.015557117f)
   }

@@ -1,3 +1,4 @@
+import barneshut.Fork
 import common._
 import barneshut.conctrees._
 
@@ -41,6 +42,8 @@ package object barneshut {
     def total: Int
 
     def insert(b: Body): Quad
+
+
   }
 
   case class Empty(centerX: Float, centerY: Float, size: Float) extends Quad {
@@ -48,30 +51,96 @@ package object barneshut {
     def massY: Float = centerY
     def mass: Float = 0
     def total: Int = 0
-    def insert(b: Body): Quad = Leaf(b.x, b.y, 1, Seq(b))
+    def insert(b: Body): Quad = Leaf(centerX, centerY, size, Seq(b))
+
+    override def toString = s"Empty($mass, $centerX, $centerY, $size)"
   }
 
-  case class Fork(
-    nw: Quad, ne: Quad, sw: Quad, se: Quad
+  case class Fork(nw: Quad, ne: Quad, sw: Quad, se: Quad
   ) extends Quad {
-    val centerX: Float = ???
-    val centerY: Float = ???
-    val size: Float = ???
-    val mass: Float = ???
-    val massX: Float = ???
-    val massY: Float = ???
-    val total: Int = ???
+    //println("Fork: " + nw  + ", "+ ne + ", " +  sw + ", " + se)
+    val centerX: Float = se.centerX - se.size/2
+    val centerY: Float = se.centerY - se.size/2
+    val size: Float = se.size * 2
+    val mass: Float = nw.mass + ne.mass + sw.mass + se.mass
+
+    val massX: Float = {
+      if (mass > 0) ((nw.massX * nw.mass) + (ne.massX * ne.mass) + (sw.massX * sw.mass) + (se.massX * se.mass))/mass
+      else centerX
+    }
+
+    val massY: Float = {
+      if (mass > 0)(nw.massY * nw.mass + ne.massY * ne.mass + sw.massY * sw.mass + se.massY * se.mass)/mass
+      else centerY
+    }
+    val total: Int = nw.total + ne.total + sw.total + se.total
 
     def insert(b: Body): Fork = {
-      ???
+      if (bounds(nw, b)) Fork(nw.insert(b), ne, sw, se)
+      else if(bounds(ne, b)) Fork(nw, ne.insert(b), sw, se)
+      else if(bounds(sw, b)) Fork(nw, ne, sw.insert(b), se)
+      else Fork(nw, ne, sw, se.insert(b))
     }
+//    override def toString = s"Fork($mass, $centerX, $centerY, $size, $nw, $ne, $sw, $se)"
+      override def toString = s"Fork($mass, $centerX, $centerY, $size)"
   }
 
   case class Leaf(centerX: Float, centerY: Float, size: Float, bodies: Seq[Body])
   extends Quad {
-    val (mass, massX, massY) = (??? : Float, ??? : Float, ??? : Float)
-    val total: Int = ???
-    def insert(b: Body): Quad = ???
+    val bodyMass  = bodies map(b => b.mass) sum
+    val (mass, massX, massY) = (bodyMass: Float,
+      (bodies map(b => b.mass * b.x) sum)/bodyMass : Float,
+      (bodies map(b => b.mass * b.y) sum)/bodyMass : Float)
+    val total: Int = bodies.length
+
+    /**
+      * If the size of a Leaf is greater than a predefined constant minimumSize,
+      * inserting an additonal body into that Leaf quadtree creates a Fork quadtree
+      * with empty children, and adds all the bodies into that Fork (including the
+      * new body).
+      * Otherwise, inserting creates another Leaf with all the existing bodies and the new one.
+      * @param b
+      * @return
+      */
+    def insert(b: Body): Quad = {
+      println("Leaf.insert: this " + this + "; b = " + b + ", size = " + size + ", minimumSize = " + minimumSize)
+      if (size > minimumSize) {
+        val newSize = size/2
+        val offset = size/4
+        var fork = Fork(
+          Empty(centerX - offset, centerY - offset, newSize),
+          Empty(centerX + offset, centerY - offset, newSize),
+          Empty(centerX - offset, centerY + offset, newSize),
+          Empty(centerX + offset, centerY + offset, newSize))
+
+        var i = 0
+        while (i < bodies.length) {
+          fork = fork.insert(bodies(i))
+          i = i + 1
+        }
+
+        fork.insert(b)
+      }
+      else {
+        val leaf = Leaf(centerX, centerY, size, bodies:+ b)
+      //  println("insert: leaf = " + leaf)
+        leaf
+      }
+    }
+
+    override def toString = s"Leaf($mass, $centerX, $centerY, $size, $bodies)"
+  }
+
+  def bounds(quad: Quad, body: Body): Boolean = {
+
+    val hs = quad.size/2f
+    if(body.x >= quad.centerX - hs &&
+        body.x <= quad.centerX + hs &&
+        body.y >= quad.centerY - hs &&
+        body.y <= quad.centerY + hs) {
+      true
+    }
+    else false
   }
 
   def minimumSize = 0.00001f
@@ -93,10 +162,13 @@ package object barneshut {
   class Body(val mass: Float, val x: Float, val y: Float, val xspeed: Float, val yspeed: Float) {
 
     def updated(quad: Quad): Body = {
+      println("updated: body = " + this + ": quad = " + quad)
       var netforcex = 0.0f
       var netforcey = 0.0f
 
       def addForce(thatMass: Float, thatMassX: Float, thatMassY: Float): Unit = {
+       println("addForce: thatMass = " + thatMass + ", thatMassX = " + thatMassX + ", thatMassY = " + thatMassY)
+        ////println("pre: netforcex = " + netforcex)
         val dist = distance(thatMassX, thatMassY, x, y)
         /* If the distance is smaller than 1f, we enter the realm of close
          * body interactions. Since we do not model them in this simplistic
@@ -116,14 +188,46 @@ package object barneshut {
           netforcex += dforcex
           netforcey += dforcey
         }
+        println("post: netforcex = " + netforcex)
+
       }
+
 
       def traverse(quad: Quad): Unit = (quad: Quad) match {
         case Empty(_, _, _) =>
           // no force
-        case Leaf(_, _, _, bodies) =>
+        case Leaf(_, _, _, bodies) => {
           // add force contribution of each body by calling addForce
+          println("leaf: bodies = " + bodies)
+//          println("mm")
+          val m = bodies.map(b => b.mass).foldLeft(0f)((l , r) => l + r)
+          val mx = bodies.map(b => b.mass * b.x).foldLeft(0f)((l , r) => l + r)
+          val my = bodies.map(b => b.mass * b.y).foldLeft(0f)((l , r) => l + r)
+
+//          println("m = " + m + ", mx = " + mx + ", my = " + my)
+//          println("qm = " + quad.mass + ", qmx = " + quad.massX + ", qmy = " + quad.massY)
+//          println("bm = " + mass + ", x = " + x + ", y = " + y)
+//          println("bm = " + mass + ", mx = " + (x*mass) + ", my = " + (y*mass))
+          //addForce(m, mx, my)
+          //          addForce(bodies map(b => b.mass) sum,
+          //            bodies map(b => b.mass * b.x) sum,
+          //            bodies map(b => b.mass * b.y) sum)
+          bodies map(b => addForce(b.mass, b.mass * b.x, b.mass * b.y))
+          //bodies map(b => addForce(mass, mass * x, mass * y))
+          //addForce(quad.mass + mass, quad.massX + (mass * x), quad.massY + (mass * y))
+          //addForce(quad.mass, quad.massX, quad.massY)
+         // addForce(quad.mass + mass, quad.massX + (mass * x), quad.massY + (mass * y))
+         // addForce(quad.mass + m, quad.massX + mx, quad.massY + my)
+        }
         case Fork(nw, ne, sw, se) =>
+          val dist = distance(quad.centerX, quad.centerY, x, y)
+          if(quad.size / dist > theta) addForce(quad.mass, quad.massX, quad.massY)
+          else {
+            traverse(nw)
+            traverse(ne)
+            traverse(sw)
+            traverse(se)
+          }
           // see if node is far enough from the body,
           // or recursion is needed
       }
@@ -135,9 +239,14 @@ package object barneshut {
       val nxspeed = xspeed + netforcex / mass * delta
       val nyspeed = yspeed + netforcey / mass * delta
 
+//      println("nxspeed = " + nxspeed)
+//      println("xspeend = " + xspeed)
+//      println("netforcex = " + netforcex)
+//      println("mass = " + mass)
+//      println("delta = " + delta)
       new Body(mass, nx, ny, nxspeed, nyspeed)
     }
-
+    override def toString = s"Body($mass, $x, $y)"
   }
 
   val SECTOR_PRECISION = 8
