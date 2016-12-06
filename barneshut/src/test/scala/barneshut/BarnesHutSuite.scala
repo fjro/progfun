@@ -162,9 +162,54 @@ import FloatOps._
     boundaries.maxY = 97
     val sm = new SectorMatrix(boundaries, SECTOR_PRECISION)
     sm += body
+
     val res = sm(2, 3).size == 1 && sm(2, 3).find(_ == body).isDefined
     assert(res, s"Body not found in the right sector")
   }
+
+  test("'SectorMatrix.combine' ") {
+    val body = new Body(5, 25, 47, 0.1f, 0.1f)
+    val boundaries = new Boundaries()
+    boundaries.minX = 1
+    boundaries.minY = 1
+    boundaries.maxX = 97
+    boundaries.maxY = 97
+    val sm = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    sm += body
+
+    val res = sm(2, 3).size == 1 && sm(2, 3).find(_ == body).isDefined
+    assert(res, s"Body not found in the right sector")
+
+    val sm2 = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    val b2 = new Body(5, 26, 47, 0.1f, 0.1f)
+    sm2 += b2
+    val res2 = sm2(2, 3).size == 1 && sm2(2, 3).find(_ == body).isDefined
+    assert(res2, s"Body not found in the right sector")
+
+    val combined = sm.combine(sm2)
+    assert(combined(2, 3).size ==  2)
+    println("hello = " + combined(2, 3).find(_ == body))
+    val res3 = combined(2, 3).find(_ == body).isDefined
+    assert(res3, s"Body not found in the right sector")
+  }
+
+//  test("Merge boundaries") {
+//    val boundaries = new Boundaries()
+//    boundaries.minX = 1
+//    boundaries.minY = 1
+//    boundaries.maxX = 97
+//    boundaries.maxY = 97
+//
+//    val b2 = new Boundaries()
+//    b2.minX = 0
+//    b2.minY = 0
+//    b2.maxX = 95
+//    b2.maxY = 98
+//
+//    val merged = me
+//
+//    assert(res, s"Body not found in the right sector")
+//  }
 
 }
 

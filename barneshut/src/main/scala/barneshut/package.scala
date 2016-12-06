@@ -23,6 +23,24 @@ package object barneshut {
 
     def centerY = minY + height / 2
 
+    //finds the indices of the closest sector to the body
+    def closest(b: Body, sectorPrecision: Int): (Int, Int) = {
+      val x = minX + sectorPrecision/2 to maxX + sectorPrecision/2 by size / sectorPrecision
+      val i = 0 until x.length
+      val xs = x zip(i)
+      val y = minY + sectorPrecision/2 to maxY + sectorPrecision/2 by size / sectorPrecision
+      val j = 0 until y.length
+      val ys = y zip(j)
+
+      val dists = for {
+        xi <- xs
+        yi <- ys
+      } yield ((xi._2, yi._2, distance(b.x, b.y, xi._1, yi._1)))
+
+      val c = dists.minBy(f => f._3)
+      (c._1, c._2)
+    }
+
     override def toString = s"Boundaries($minX, $minY, $maxX, $maxY)"
   }
 
@@ -81,8 +99,8 @@ package object barneshut {
       else if(bounds(sw, b)) Fork(nw, ne, sw.insert(b), se)
       else Fork(nw, ne, sw, se.insert(b))
     }
-//    override def toString = s"Fork($mass, $centerX, $centerY, $size, $nw, $ne, $sw, $se)"
-      override def toString = s"Fork($mass, $centerX, $centerY, $size)"
+
+    override def toString = s"Fork($mass, $centerX, $centerY, $size)"
   }
 
   case class Leaf(centerX: Float, centerY: Float, size: Float, bodies: Seq[Body])
@@ -103,7 +121,6 @@ package object barneshut {
       * @return
       */
     def insert(b: Body): Quad = {
-      //println("Leaf.insert: this " + this + "; b = " + b + ", size = " + size + ", minimumSize = " + minimumSize)
       if (size > minimumSize) {
         val newSize = size/2
         val offset = size/4
@@ -122,9 +139,8 @@ package object barneshut {
         fork.insert(b)
       }
       else {
-        val leaf = Leaf(centerX, centerY, size, bodies:+ b)
-      //  println("insert: leaf = " + leaf)
-        leaf
+        Leaf(centerX, centerY, size, bodies:+ b)
+
       }
     }
 
@@ -156,21 +172,16 @@ package object barneshut {
   def force(m1: Float, m2: Float, dist: Float): Float = gee * m1 * m2 / (dist * dist)
 
   def distance(x0: Float, y0: Float, x1: Float, y1: Float): Float = {
-    val dist = math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)).toFloat
-    println("dist = " + dist)
-    dist
+    math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)).toFloat
   }
 
   class Body(val mass: Float, val x: Float, val y: Float, val xspeed: Float, val yspeed: Float) {
 
     def updated(quad: Quad): Body = {
-      println("updated: body = " + this + ": quad = " + quad)
       var netforcex = 0.0f
       var netforcey = 0.0f
 
       def addForce(thatMass: Float, thatMassX: Float, thatMassY: Float): Unit = {
-       println("addForce: thatMass = " + thatMass + ", thatMassX = " + thatMassX + ", thatMassY = " + thatMassY)
-        ////println("pre: netforcex = " + netforcex)
         val dist = distance(thatMassX, thatMassY, x, y)
         /* If the distance is smaller than 1f, we enter the realm of close
          * body interactions. Since we do not model them in this simplistic
@@ -190,40 +201,19 @@ package object barneshut {
           netforcex += dforcex
           netforcey += dforcey
         }
-        println("post: netforcex = " + netforcex)
-
       }
 
 
       def traverse(quad: Quad): Unit = (quad: Quad) match {
-        case Empty(_, _, _) =>
+        case Empty(_, _, _) => Unit
           // no force
         case Leaf(_, _, _, bodies) => {
-          // add force contribution of each body by calling addForce
-          println("leaf: bodies = " + bodies)
-//          println("mm")
-          val m = bodies.map(b => b.mass).foldLeft(0f)((l , r) => l + r)
-          val mx = bodies.map(b => b.mass * b.x).foldLeft(0f)((l , r) => l + r)
-          val my = bodies.map(b => b.mass * b.y).foldLeft(0f)((l , r) => l + r)
-
-//          println("m = " + m + ", mx = " + mx + ", my = " + my)
-//          println("qm = " + quad.mass + ", qmx = " + quad.massX + ", qmy = " + quad.massY)
-//          println("bm = " + mass + ", x = " + x + ", y = " + y)
-//          println("bm = " + mass + ", mx = " + (x*mass) + ", my = " + (y*mass))
-          //addForce(m, mx, my)
-          //          addForce(bodies map(b => b.mass) sum,
-          //            bodies map(b => b.mass * b.x) sum,
-          //            bodies map(b => b.mass * b.y) sum)
-          bodies map(b => addForce(b.mass, b.mass * b.x, b.mass * b.y))
-          //bodies map(b => addForce(mass, mass * x, mass * y))
-          //addForce(quad.mass + mass, quad.massX + (mass * x), quad.massY + (mass * y))
-          //addForce(quad.mass, quad.massX, quad.massY)
-         // addForce(quad.mass + mass, quad.massX + (mass * x), quad.massY + (mass * y))
-         // addForce(quad.mass + m, quad.massX + mx, quad.massY + my)
+          for {
+            b <- bodies
+          } yield (addForce(b.mass, b.x, b.y))
         }
         case Fork(nw, ne, sw, se) =>
           val dist = distance(quad.centerX, quad.centerY, x, y)
-          println("quad.size / dist < theta = " + (quad.size / dist < theta))
           if(quad.size / dist < theta) addForce(quad.mass, quad.massX, quad.massY)
           else {
             traverse(nw)
@@ -231,8 +221,6 @@ package object barneshut {
             traverse(sw)
             traverse(se)
           }
-          // see if node is far enough from the body,
-          // or recursion is needed
       }
 
       traverse(quad)
@@ -242,14 +230,9 @@ package object barneshut {
       val nxspeed = xspeed + netforcex / mass * delta
       val nyspeed = yspeed + netforcey / mass * delta
 
-//      println("nxspeed = " + nxspeed)
-//      println("xspeend = " + xspeed)
-//      println("netforcex = " + netforcex)
-//      println("mass = " + mass)
-//      println("delta = " + delta)
       new Body(mass, nx, ny, nxspeed, nyspeed)
     }
-    override def toString = s"Body($mass, $x, $y)"
+    override def toString = s"Body($mass, $x, $y, $xspeed, $yspeed)"
   }
 
   val SECTOR_PRECISION = 8
@@ -259,15 +242,37 @@ package object barneshut {
     val matrix = new Array[ConcBuffer[Body]](sectorPrecision * sectorPrecision)
     for (i <- 0 until matrix.length) matrix(i) = new ConcBuffer
 
+    /**
+      * This method should use the body position, boundaries and sectorPrecision to determine the
+      * sector into which the body should go into, and add the body into the corresponding ConcBuffer object.
+      *
+      * Importantly, if the Body lies outside of the Boundaries, it should be considered to be
+      * located at the closest point within the Boundaries for the purpose of finding which
+      * ConcBuffer should hold the body.
+      */
     def +=(b: Body): SectorMatrix = {
-      ???
+      //println("sectorSize = " + sectorSize)
+      val xy = boundaries.closest(b, sectorPrecision)
+      //println("xy = " + xy)
+      apply(xy._1, xy._2) += b
+
       this
     }
 
     def apply(x: Int, y: Int) = matrix(y * sectorPrecision + x)
 
+    /**
+      * Takes another SectorMatrix, and creates a SectorMatrix which contains the elements of both
+      * input SectorMatrix data structures:
+      * @param that
+      * @return
+      */
     def combine(that: SectorMatrix): SectorMatrix = {
-      ???
+      val combind = new SectorMatrix(boundaries, sectorPrecision)
+
+      for (i <- 0 until this.matrix.length) combind.matrix(i) = matrix(i).combine(that.matrix(i))
+      combind
+
     }
 
     def toQuad(parallelism: Int): Quad = {
