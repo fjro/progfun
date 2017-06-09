@@ -46,6 +46,7 @@ class WikipediaSuite extends FunSuite with BeforeAndAfterAll {
     import WikipediaRanking._
     val rdd = sc.parallelize(Seq(WikipediaArticle("title", "Java Jakarta")))
     val res = (occurrencesOfLang("Java", rdd) == 1)
+
     assert(res, "occurrencesOfLang given (specific) RDD with one element should equal to 1")
   }
 
@@ -56,6 +57,7 @@ class WikipediaSuite extends FunSuite with BeforeAndAfterAll {
     val rdd = sc.parallelize(List(WikipediaArticle("1", "Scala is great"), WikipediaArticle("2", "Java is OK, but Scala is cooler")))
     val ranked = rankLangs(langs, rdd)
     val res = ranked.head._1 == "Scala"
+    println("hello 5")
     assert(res)
   }
 
