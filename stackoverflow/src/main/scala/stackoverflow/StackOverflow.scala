@@ -20,7 +20,7 @@ object StackOverflow extends StackOverflow {
   /** Main function */
   def main(args: Array[String]): Unit = {
 
-    val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
+    val lines   = sc.textFile("src/main/resources/stackoverflow.csv")
     val raw     = rawPostings(lines)
     val grouped = groupedPostings(raw)
     val scored  = scoredPostings(grouped)
@@ -78,7 +78,10 @@ class StackOverflow extends Serializable {
 
   /** Group the questions and answers together */
   def groupedPostings(postings: RDD[Posting]): RDD[(Int, Iterable[(Posting, Posting)])] = {
-    ???
+    val questions = postings.filter(p => p.postingType == 1).map(p => (p.id, p))
+    val answers = postings.filter(p => p.postingType == 2).map(p => (p.parentId.get, p))
+    val tup = questions.join(answers)
+    tup.groupByKey()
   }
 
 
@@ -97,7 +100,9 @@ class StackOverflow extends Serializable {
       highScore
     }
 
-    ???
+    // map to questions and answers then compute the score
+    val qAndA = grouped.map(g => (g._2.map(p => p._1).headOption.get, g._2.map(p => p._2).toArray))
+    qAndA.mapValues(p => answerHighScore(p))
   }
 
 
