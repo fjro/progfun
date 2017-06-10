@@ -90,21 +90,7 @@ class StackOverflow extends Serializable {
   def scoredPostings(grouped: RDD[(Int, Iterable[(Posting, Posting)])]): RDD[(Posting, Int)] = {
 
     def answerHighScore(as: Iterable[Posting]): Int = as.map(_.score).max
-//    def answerHighScore(as: Array[Posting]): Int = {
-//      var highScore = 0
-//      var i = 0
-//      while (i < as.length) {
-//        val score = as(i).score
-//        if (score > highScore)
-//          highScore = score
-//        i += 1
-//      }
-//      highScore
-//    }
 
-    // map to questions and answers then compute the score
-//    val qAndA = grouped.map(g => (g._2.map(p => p._1).headOption.get, g._2.map(p => p._2).toArray))
-//    qAndA.mapValues(p => answerHighScore(p))
     grouped
       .flatMap(_._2)
       .groupByKey()
@@ -314,9 +300,6 @@ class StackOverflow extends Serializable {
         else sortedScores(middle)
       }
 
-//      val sortedScores = vs.map(_._2).toList.sorted
-//      val middle = clusterSize / 2
-//      val medianScore: Int = if (clusterSize % 2 == 0) (sortedScores(middle - 1) + sortedScores(middle)) / 2 else sortedScores(middle)
       val medianScore = medianFunc()
       (langLabel, langPercent, clusterSize, medianScore)
     }
