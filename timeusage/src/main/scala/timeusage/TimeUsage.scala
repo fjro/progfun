@@ -62,15 +62,19 @@ object TimeUsage {
     *         have type Double. None of the fields are nullable.
     * @param columnNames Column names of the DataFrame
     */
-  def dfSchema(columnNames: List[String]): StructType =
-    ???
-
+  def dfSchema(columnNames: List[String]): StructType = {
+    val doubleFields = columnNames.tail.map(col => StructField(col, DoubleType, false))
+    val fields = StructField(columnNames.head, StringType, false)::doubleFields
+    StructType(fields)
+  }
 
   /** @return An RDD Row compatible with the schema produced by `dfSchema`
     * @param line Raw fields
     */
-  def row(line: List[String]): Row =
-    ???
+  def row(line: List[String]): Row = Row(
+    line.head.toString :: line.tail.map(_.toDouble): _*
+  )
+
 
   /** @return The initial data frame columns partitioned in three groups: primary needs (sleeping, eating, etc.),
     *         work and other (leisure activities)
@@ -88,8 +92,24 @@ object TimeUsage {
     *    “t10”, “t12”, “t13”, “t14”, “t15”, “t16” and “t18” (those which are not part of the previous groups only).
     */
   def classifiedColumns(columnNames: List[String]): (List[Column], List[Column], List[Column]) = {
-    ???
+    //SSet(t0201, t180101, t180201, t180501, t180301, t0601) did not equal Set(t0201, t0601, t180201)
+    val primaryNeeds = List("t01", "t03", "t11", "t1801", "t1803")
+    val workingActivities = List("t05", "t1805")
+    val other = List("t02", "t04", "t06", "t07", "t08", "t09", "t10", "t12", "t13", "t14", "t15", "t16", "t18")
+
+    def colsStartingWith(targets: List[String]): List[String] =
+      columnNames.filter(c => targets.exists(cc => c.startsWith(cc)))
+  //.map(h => col(h)
+    val pn = colsStartingWith(primaryNeeds)
+    val wa = colsStartingWith(workingActivities)
+    val ot = colsStartingWith(other).diff(pn:::wa)
+    (pn.map(h => col(h)),
+      wa.map(h => col(h)),
+      ot.map(h => col(h)))
   }
+
+
+
 
   /** @return a projection of the initial DataFrame such that all columns containing hours spent on primary needs
     *         are summed together in a single column (and same for work and leisure). The “teage” column is also
