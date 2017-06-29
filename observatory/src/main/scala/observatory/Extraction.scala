@@ -7,6 +7,9 @@ import java.time.LocalDate
   */
 object Extraction {
 
+  def fahrenheitToCelsius(f: Double): Double =
+    (f - 32.0) * (5.0/9.0)
+
   /**
     * @param year             Year number
     * @param stationsFile     Path of the stations resource file to use (e.g. "/stations.csv")
