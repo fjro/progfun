@@ -1,5 +1,7 @@
 package observatory
 
+import java.io.File
+
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
@@ -33,8 +35,19 @@ class ExtractionTest extends FunSuite {
   }
 
   test("locateTemperatures") {
-    val temps = locateTemperatures(1975, "/stations.csv", "/1975.csv").toList
+    val temps = locateTemperatures2(1975, "/stations.csv", "/1975.csv").toList
     assert(temps.length === 720)
+  }
+
+  test("locateTemperatures2") {
+    val temps = locateTemperatures2(1975, "/stations.csv", "/1975.csv").toList
+    assert(temps.length === 720)
+  }
+
+//  S
+
+  test("Temp RDD") {
+    assert(tempRdd(1975, "/1975.csv").count() === 250773)
   }
   
 }
