@@ -41,8 +41,8 @@ object Extraction {
     val rdd = rddOption.filter(r => r.isDefined).map(r => r.get)
 
     val schema = new StructType()
-      .add(StructField("StnID", StringType, true))
-      .add(StructField("WbanID", StringType, true))
+      .add(StructField("StnID", IntegerType, true))
+      .add(StructField("WbanID", IntegerType, true))
       .add(StructField("Lat", DoubleType, true))
       .add(StructField("Long", DoubleType, true))
 
@@ -64,8 +64,8 @@ object Extraction {
     val rdd = rddOption.filter(r => r.isDefined).map(r => r.get)
 
     val schema = new StructType()
-      .add(StructField("StnID", StringType, true))
-      .add(StructField("WbanID", StringType, true))
+      .add(StructField("StnID", IntegerType, true))
+      .add(StructField("WbanID", IntegerType, true))
       .add(StructField("Date", TimestampType, true))
       .add(StructField("Temp", DoubleType, true))
 
@@ -84,6 +84,14 @@ object Extraction {
     }
   }
 
+  def parseInt(s: String): Int = {
+    s match {
+      case null => Int.MinValue
+      case s => if (s.isEmpty) Int.MinValue else s.toInt
+    }
+  }
+
+
   /**
     * Parses a station csv line into a Row.
     * @param line The csv line.
@@ -93,7 +101,7 @@ object Extraction {
     if (line == null || line.isEmpty) None
     else {
       val parts = line.trim.split(",")
-      if (parts.length == 4) Some(Row(parts(0).trim, parts(1).trim, parseDouble(parts(2)), parseDouble(parts(3))))
+      if (parts.length == 4) Some(Row(parseInt(parts(0)), parseInt(parts(1)), parseDouble(parts(2)), parseDouble(parts(3))))
       else None
     }
   }
@@ -108,8 +116,9 @@ object Extraction {
     else {
       val parts = line.trim.split(",")
       if (parts.length == 5) {
-        Some(Row(parts(0).trim,
-          parts(1).trim,
+        Some(
+          Row(parseInt(parts(0)),
+          parseInt(parts(1)),
           Timestamp.valueOf(LocalDate.of(year, parts(2).toInt, parts(3).toInt).atStartOfDay()),
           parseDouble(parts(4))))
       }
@@ -131,8 +140,8 @@ object Extraction {
     * @return A sequence containing triplets (date, location, temperature)
     */
   def locateTemperatures(year: Int, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Double)] = {
-    val stations = stationsDF(stationsFile).filter($"StnID" =!= "" && $"WbanID" =!= "" )
-    val temps = tempDF(temperaturesFile, year).filter($"StnID" =!= "" && $"WbanID" =!= "" && $"Temp" =!= 9999.9)
+    val stations = stationsDF(stationsFile).filter($"StnID" =!= Int.MinValue && $"WbanID" =!= Int.MinValue )
+    val temps = tempDF(temperaturesFile, year).filter($"StnID" =!= Int.MinValue && $"WbanID" =!= Int.MinValue && $"Temp" =!= 9999.9)
     val j = stations.join(temps, stations("StnId") === temps("StnId") && stations("WbanID") === temps("WbanID"))
     val res = j.select("Date", "Lat", "Long", "Temp").rdd.map {
       case Row(date: Timestamp, lat: Double, longitude: Double, temp: Double) => (date.toLocalDateTime.toLocalDate, Location(lat, longitude), fahrenheitToCelsius(temp))
