@@ -122,17 +122,6 @@ object Extraction {
   }
 
   /**
-    * Gets the temperature value.
-    * @param t The string
-    * @return The temp or NaN.
-    */
-  def getTemp(t: String): Double = {
-    val temp = t.toDouble
-    if (temp == 9999.9) Double.NaN
-    else temp
-  }
-
-  /**
     * Converts fahrenheit to celcius.
     * @param f The Fahrenheit value.
     * @return The Celcius value
