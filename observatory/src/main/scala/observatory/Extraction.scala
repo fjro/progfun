@@ -4,11 +4,7 @@ import java.time.LocalDate
 import java.io.File
 import java.sql.Timestamp
 
-import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
-
-import scala.collection.mutable.Map
-import scala.io.{BufferedSource, Source}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.types._
@@ -97,7 +93,7 @@ object Extraction {
     if (line == null || line.isEmpty) None
     else {
       val parts = line.trim.split(",")
-      if (parts.length == 4) Some(Row(parts(0), parts(1), parseDouble(parts(2)), parseDouble(parts(3))))
+      if (parts.length == 4) Some(Row(parts(0).trim, parts(1).trim, parseDouble(parts(2)), parseDouble(parts(3))))
       else None
     }
   }
@@ -112,8 +108,8 @@ object Extraction {
     else {
       val parts = line.trim.split(",")
       if (parts.length == 5) {
-        Some(Row(parts(0),
-          parts(1),
+        Some(Row(parts(0).trim,
+          parts(1).trim,
           Timestamp.valueOf(LocalDate.of(year, parts(2).toInt, parts(3).toInt).atStartOfDay()),
           parseDouble(parts(4))))
       }
@@ -135,7 +131,7 @@ object Extraction {
     * @return A sequence containing triplets (date, location, temperature)
     */
   def locateTemperatures(year: Int, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Double)] = {
-    val stations = stationsDF(stationsFile).filter($"StnID" =!= "" && $"WbanID" =!= "")
+    val stations = stationsDF(stationsFile).filter($"StnID" =!= "" && $"WbanID" =!= "" )
     val temps = tempDF(temperaturesFile, year).filter($"StnID" =!= "" && $"WbanID" =!= "" && $"Temp" =!= 9999.9)
     val j = stations.join(temps, stations("StnId") === temps("StnId") && stations("WbanID") === temps("WbanID"))
     val res = j.select("Date", "Lat", "Long", "Temp").rdd.map {
