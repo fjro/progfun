@@ -142,6 +142,8 @@ object Extraction {
   def locateTemperatures(year: Int, stationsFile: String, temperaturesFile: String): Iterable[(LocalDate, Location, Double)] = {
     val stations = stationsDF(stationsFile).filter($"StnID" =!= Int.MinValue && $"WbanID" =!= Int.MinValue )
     val temps = tempDF(temperaturesFile, year).filter($"StnID" =!= Int.MinValue && $"WbanID" =!= Int.MinValue && $"Temp" =!= 9999.9)
+
+    //TODO: bug in the join, handle ids
     val j = stations.join(temps, stations("StnId") === temps("StnId") && stations("WbanID") === temps("WbanID"))
     val res = j.select("Date", "Lat", "Long", "Temp").rdd.map {
       case Row(date: Timestamp, lat: Double, longitude: Double, temp: Double) => (date.toLocalDateTime.toLocalDate, Location(lat, longitude), fahrenheitToCelsius(temp))
