@@ -51,13 +51,40 @@ object Visualization {
     else distances.find(d => d._1 == 0).get._2
   }
 
+
+  def lerp(v0: Double, v1: Double, t: Double): Int = ((1 - t) * v0 + t * v1).toInt
+
+  def lerpColor(c0: Color, c1: Color, t: Double): Color = {
+    if (c0 == c1) c0
+    else Color(lerp(c0.red, c1.red, t),
+      lerp(c0.green, c1.green, t),
+      lerp(c0.blue, c1.blue, t))
+  }
+
+  def bounds(list: List[(Double, Color)], d: Double): Option[((Double, Color), (Double, Color))] = {
+    val r = list.find(p => p._1 == d)
+    if (r.isDefined) Some((r.get, r.get))
+    else {
+      val res = for {
+        i <- 0 until list.length -1
+        if list(i)._1 < d && list(i + 1)._1 > d
+
+      } yield (list(i), list(i + 1))
+
+      if (res.size == 1) Some(res(0))
+      else None
+    }
+  }
+
   /**
     * @param points Pairs containing a value and its associated color
     * @param value The value to interpolate
     * @return The color that corresponds to `value`, according to the color scale defined by `points`
     */
   def interpolateColor(points: Iterable[(Double, Color)], value: Double): Color = {
-    ???
+    val sorted = points.toList.sortWith(_._1 < _._1)
+    val closest = bounds(sorted, value).get
+    lerpColor(closest._1._2, closest._2._2, value)
   }
 
   /**
