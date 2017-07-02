@@ -51,14 +51,37 @@ object Visualization {
     else distances.find(d => d._1 == 0).get._2
   }
 
+  /**
+    * Linear interpolation between two double values.
+    * @param v0
+    * @param v1
+    * @param t The alpha
+    * @return
+    */
+  def lerp(v0: Double, v1: Double, t: Double): Double = (1 - t) * v0 + t * v1
 
-  def lerp(v0: Double, v1: Double, t: Double): Int = ((1 - t) * v0 + t * v1).toInt
+  /**
+    * Linear interpolation between two Int values.
+    * @param v0
+    * @param v1
+    * @param t The alpha
+    * @return
+  */
+  def lerpInt(v0: Int, v1: Int, t: Double): Int = math.round(lerp(v0, v1, t)).toInt
 
+  /**
+    * Linear interpolation between two Colors
+    * @param c0
+    * @param c1
+    * @param t The alpha
+    * @return The interpolated Color.
+    */
   def lerpColor(c0: Color, c1: Color, t: Double): Color = {
     if (c0 == c1) c0
-    else Color(lerp(c0.red, c1.red, t),
-      lerp(c0.green, c1.green, t),
-      lerp(c0.blue, c1.blue, t))
+    else Color(
+      lerpInt(c0.red, c1.red, t),
+      lerpInt(c0.green, c1.green, t),
+      lerpInt(c0.blue, c1.blue, t))
   }
 
   def bounds(list: List[(Double, Color)], d: Double): Option[((Double, Color), (Double, Color))] = {
@@ -84,7 +107,10 @@ object Visualization {
   def interpolateColor(points: Iterable[(Double, Color)], value: Double): Color = {
     val sorted = points.toList.sortWith(_._1 < _._1)
     val closest = bounds(sorted, value).get
-    lerpColor(closest._1._2, closest._2._2, value)
+
+    //TODO: calculate alpha
+    val alpha = 0.5
+    lerpColor(closest._1._2, closest._2._2, alpha)
   }
 
   /**
