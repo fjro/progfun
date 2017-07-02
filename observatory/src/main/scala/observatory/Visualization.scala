@@ -35,8 +35,7 @@ object Visualization {
     * @param p The power.
     * @return The idw.
     */
-  def idw(distance: Double, p: Int = 2): Double =
-    1/pow(distance, p)
+  def idw(distance: Double, p: Int = 2): Double = 1/pow(distance, p)
 
   /**
     * @param temperatures Known temperatures: pairs containing a location and the temperature at this location
@@ -47,7 +46,7 @@ object Visualization {
     val distances = temperatures.map(t => (greatCircleDistance(location, t._1), t._2))
     val zeros = distances.count(d => d._1 == 0d)
 
-    //TODO: slow, multiple passes
+    //TODO: slow, multiple passes, <= 1 will do
     if (zeros == 0) distances.map(d => idw(d._1) * d._2).reduce(_+_) / distances.map(d => idw(d._1)).reduce(_+_)
     else distances.find(d => d._1 == 0).get._2
   }
