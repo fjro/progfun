@@ -21,8 +21,17 @@ class VisualizationTest extends FunSuite with Checkers {
     assert(lerpColor(Color(255,0,0), Color(0,0,255), 0.25) === Color(191,0,64))
   }
 
+  test("bounds") {
+
+  }
+  
   test("interpolateColor") {
-    val actual = interpolateColor(List((-1.0,Color(255,0,0)), (0.0,Color(0,0,255))), value = -0.75)
+    val actual1 = interpolateColor(List((-1.0,Color(255,0,0)), (0.0,Color(0,0,255))), value = -0.75)
+    assert(actual1 === Color(191,0,64))
+    val actual = interpolateColor(List((0.0,Color(255,0,0)), (5.0,Color(0,0,255))), value = 1.25)
     assert(actual === Color(191,0,64))
   }
+
+
+
 }

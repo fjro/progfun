@@ -107,7 +107,7 @@ object Visualization {
   def interpolateColor(points: Iterable[(Double, Color)], value: Double): Color = {
     val sorted = points.toList.sortWith(_._1 < _._1)
     val closest = bounds(sorted, value).get
-    val alpha = 1-(value/(closest._1._1 + closest._2._1))
+    val alpha = (value - closest._1._1) / (closest._2._1 - closest._1._1)
     lerpColor(closest._1._2, closest._2._2, alpha)
   }
 
