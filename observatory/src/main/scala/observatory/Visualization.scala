@@ -84,9 +84,15 @@ object Visualization {
       lerpInt(c0.blue, c1.blue, t))
   }
 
-  def bounds(list: List[(Double, Color)], d: Double): Option[((Double, Color), (Double, Color))] = {
+  /**
+    * Gets the closest bounding values for a given value in an ordered list.
+    * @param list The list.
+    * @param d The value.
+    * @return The closest upper and lower values.
+    */
+  def bounds(list: List[(Double, Color)], d: Double): ((Double, Color), (Double, Color)) = {
     val r = list.find(p => p._1 == d)
-    if (r.isDefined) Some((r.get, r.get))
+    if (r.isDefined) (r.get, r.get)
     else {
       val res = for {
         i <- 0 until list.length -1
@@ -94,8 +100,11 @@ object Visualization {
 
       } yield (list(i), list(i + 1))
 
-      if (res.size == 1) Some(res(0))
-      else None
+      if (res.size == 1) res(0)
+      else {
+        if (d <= list(0)._1) (list(0), list(0))
+        else (list(list.length - 1), list(list.length - 1))
+      }
     }
   }
 
@@ -106,7 +115,7 @@ object Visualization {
     */
   def interpolateColor(points: Iterable[(Double, Color)], value: Double): Color = {
     val sorted = points.toList.sortWith(_._1 < _._1)
-    val closest = bounds(sorted, value).get
+    val closest = bounds(sorted, value)
     val alpha = (value - closest._1._1) / (closest._2._1 - closest._1._1)
     lerpColor(closest._1._2, closest._2._2, alpha)
   }

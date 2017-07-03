@@ -21,16 +21,41 @@ class VisualizationTest extends FunSuite with Checkers {
     assert(lerpColor(Color(255,0,0), Color(0,0,255), 0.25) === Color(191,0,64))
   }
 
-  test("bounds") {
-
+  test("bounds with intermediate") {
+    val c = Color(250, 0, 0)
+    val values = List[(Double, Color)]((12d, c), (2d, c), (3d, c), (0, c), (1, c)).sortWith(_._1 < _._1)
+    val closest = bounds(values, 2.1)
+    assert(closest._1._1 === 2)
+    assert(closest._2._1 === 3)
   }
-  
+
+  test("bounds with Max") {
+    val c = Color(250, 0, 0)
+    val values = List[(Double, Color)]((12d, c), (2d, c), (3d, c), (0, c), (1, c)).sortWith(_._1 < _._1)
+    val closest = bounds(values, 22.1)
+    assert(closest._1._1 === 12)
+    assert(closest._2._1 === 12)
+  }
+
+  test("bounds with Min") {
+    val c = Color(250, 0, 0)
+    val values = List[(Double, Color)]((12d, c), (2d, c), (3d, c), (0, c), (1, c)).sortWith(_._1 < _._1)
+    val closest = bounds(values, -22.1)
+    assert(closest._1._1 === 0)
+    assert(closest._2._1 === 0)
+  }
+
   test("interpolateColor") {
-    val actual1 = interpolateColor(List((-1.0,Color(255,0,0)), (0.0,Color(0,0,255))), value = -0.75)
-    assert(actual1 === Color(191,0,64))
     val actual = interpolateColor(List((0.0,Color(255,0,0)), (5.0,Color(0,0,255))), value = 1.25)
     assert(actual === Color(191,0,64))
+    val actual1 = interpolateColor(List((-1.0,Color(255,0,0)), (0.0,Color(0,0,255))), value = -0.75)
+    assert(actual1 === Color(191,0,64))
+    val actual2 = interpolateColor(List((-72.70731499297264,Color(255,0,0)), (1.0,Color(0,0,255))), value = -82.70731499297264)
+    assert(actual2 === Color(255,0,0))
+
   }
+
+  //Expected: Color(255,0,0) (scale = List((-72.70731499297264,Color(255,0,0)), (1.0,Color(0,0,255))), value = -82.70731499297264)
 
 
 
