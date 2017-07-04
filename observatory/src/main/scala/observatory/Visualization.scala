@@ -128,20 +128,18 @@ object Visualization {
     * @return A 360×180 image where each pixel shows the predicted temperature at its location
     */
   def visualize(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)]): Image = {
-   println("\n\n temp size = " + temperatures.toList.size +
-      ", cols size = " + colors.toList.size)
-    println("locs = " + locations.size)
     val predictedTemps = locations.map(l => predictTemperature(temperatures, l))
-    println("pt = " + predictedTemps.toList.size)
     val pixels = predictedTemps
                   .map(t => interpolateColor(colors, t))
                   .map(c => Pixel.apply(c.red, c.green, c.blue, 255)).toArray
-    println("pixels.len = " + pixels.length)
     val image = Image.apply(360, 180, pixels)
     image.output(new java.io.File("target/map.png"))
     image
   }
 
+  /**
+    * The color range.
+    */
   val colors = List[(Double, Color)](
     (60, Color(255, 255, 255)),
     (32, Color(255, 0, 0)),
@@ -153,8 +151,11 @@ object Visualization {
     (-60, Color(0, 0, 0))
   )
 
+  /**
+    * The locations of each pixel.
+    */
   val locations: Iterable[Location] = {
-    val lon = -180 to 170
+    val lon = -180 to 179
     val lat = (-89 to 90).reverse
     for {
       i <- lat
