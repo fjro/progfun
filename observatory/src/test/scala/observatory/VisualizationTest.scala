@@ -1,10 +1,13 @@
 package observatory
 
+import java.time.LocalDate
+
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.prop.Checkers
 import observatory.Visualization._
+import observatory.Extraction._
 
 @RunWith(classOf[JUnitRunner])
 class VisualizationTest extends FunSuite with Checkers {
@@ -55,7 +58,12 @@ class VisualizationTest extends FunSuite with Checkers {
 
   }
 
-  //Expected: Color(255,0,0) (scale = List((-72.70731499297264,Color(255,0,0)), (1.0,Color(0,0,255))), value = -82.70731499297264)
+  test("visualize") {
+    val temps = locateTemperatures(1975, "/stations.csv", "/1975.csv").toList
+    val means = locationYearlyAverageRecords(temps)
+    var image = visualize(means, colors)
+
+  }
 
 
 

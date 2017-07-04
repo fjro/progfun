@@ -2,11 +2,13 @@ package observatory
 
 import com.sksamuel.scrimage.{Image, Pixel}
 import Math._
+import org.apache.log4j.{Level, Logger}
 
 /**
   * 2nd milestone: basic visualization
   */
 object Visualization {
+  val logger = Logger.getLogger("observatory")
 
   /**
     * Converts a location to radians
@@ -35,7 +37,7 @@ object Visualization {
     * @param p The power.
     * @return The idw.
     */
-  def idw(distance: Double, p: Int = 2): Double = 1/pow(distance, p)
+  def idw(distance: Double, p: Int = 3): Double = 1/pow(distance, p)
 
   /**
     * @param temperatures Known temperatures: pairs containing a location and the temperature at this location
@@ -126,8 +128,38 @@ object Visualization {
     * @return A 360×180 image where each pixel shows the predicted temperature at its location
     */
   def visualize(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)]): Image = {
-    ???
+   println("\n\n temp size = " + temperatures.toList.size +
+      ", cols size = " + colors.toList.size)
+    println("locs = " + locations.size)
+    val predictedTemps = locations.map(l => predictTemperature(temperatures, l))
+    println("pt = " + predictedTemps.toList.size)
+    val pixels = predictedTemps
+                  .map(t => interpolateColor(colors, t))
+                  .map(c => Pixel.apply(c.red, c.green, c.blue, 255)).toArray
+    println("pixels.len = " + pixels.length)
+    val image = Image.apply(360, 180, pixels)
+    image.output(new java.io.File("target/map.png"))
+    image
   }
 
+  val colors = List[(Double, Color)](
+    (60, Color(255, 255, 255)),
+    (32, Color(255, 0, 0)),
+    (12, Color(255, 255, 0)),
+    (0, Color(0, 255, 255)),
+    (-15, Color(0, 0, 255)),
+    (-27, Color(255, 0, 255)),
+    (-50, Color(33, 0, 107)),
+    (-60, Color(0, 0, 0))
+  )
+
+  val locations: Iterable[Location] = {
+    val lon = -180 to 170
+    val lat = (-89 to 90).reverse
+    for {
+      i <- lat
+      j <- lon
+    } yield Location(i, j)
+  }
 }
 
