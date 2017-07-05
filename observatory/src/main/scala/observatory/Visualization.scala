@@ -129,7 +129,7 @@ object Visualization {
     */
   def visualize(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)]): Image = {
     val predictedTemps = locations.map(l => predictTemperature(temperatures, l))
-    val alpha = 100 // [0,255]
+    val alpha = 127 // [0,255]
     val pixels = predictedTemps
                   .map(t => interpolateColor(colors, t))
                   .map(c => Pixel.apply(c.red, c.green, c.blue, alpha)).toArray

@@ -58,12 +58,11 @@ class VisualizationTest extends FunSuite with Checkers {
 
   }
 
-  test("visualize") {
-    val temps = locateTemperatures(1975, "/stations.csv", "/1975.csv").toList
-    val means = locationYearlyAverageRecords(temps)
-    var image = visualize(means, colors)
-
-  }
+//  test("visualize") {
+//    val temps = locateTemperatures(1975, "/stations.csv", "/1975.csv").toList
+//    val means = locationYearlyAverageRecords(temps)
+//    var image = visualize(means, colors)
+//  }
 
 
 
