@@ -129,9 +129,10 @@ object Visualization {
     */
   def visualize(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)]): Image = {
     val predictedTemps = locations.map(l => predictTemperature(temperatures, l))
+    val alpha = 100 // [0,255]
     val pixels = predictedTemps
                   .map(t => interpolateColor(colors, t))
-                  .map(c => Pixel.apply(c.red, c.green, c.blue, 255)).toArray
+                  .map(c => Pixel.apply(c.red, c.green, c.blue, alpha)).toArray
     val image = Image.apply(360, 180, pixels)
     image.output(new java.io.File("target/map.png"))
     image
