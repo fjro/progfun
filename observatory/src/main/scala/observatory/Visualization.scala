@@ -134,7 +134,7 @@ object Visualization {
                   .map(t => interpolateColor(colors, t))
                   .map(c => Pixel.apply(c.red, c.green, c.blue, alpha)).toArray
     val image = Image.apply(360, 180, pixels)
-    image.output(new java.io.File("target/map.png"))
+    //image.output(new java.io.File("target/map.png"))
     image
   }
 
@@ -163,5 +163,6 @@ object Visualization {
       j <- lon
     } yield Location(i, j)
   }
+
 }
 

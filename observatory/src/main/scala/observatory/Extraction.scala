@@ -160,7 +160,7 @@ object Extraction {
   }
 
   /**
-    * Caluculates the mean temperature ignoring NAs.
+    * Calculates the mean temperature ignoring NAs.
     * @param obs The triplet of observations.
     * @return The mean temperature to 1 dp.
     */
